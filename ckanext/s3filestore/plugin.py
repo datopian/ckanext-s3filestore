@@ -58,10 +58,10 @@ class S3FileStorePlugin(plugins.SingletonPlugin):
         with SubMapper(map, controller='ckanext.s3filestore.controller:S3Controller') as m:
             # Override the resource download links
             m.connect('resource_download',
-                      '/dataset/{id}/resource/{resource_id}/download',
+                      '/dataset/{id}/resource/{resource_id}/download/s3',
                       action='resource_download')
             m.connect('resource_download',
-                      '/dataset/{id}/resource/{resource_id}/download/{filename}',
+                      '/dataset/{id}/resource/{resource_id}/download/{filename}/s3',
                       action='resource_download')
 
             # fallback controller action to download from the filesystem
