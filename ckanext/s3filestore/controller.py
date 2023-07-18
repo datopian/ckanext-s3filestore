@@ -67,7 +67,8 @@ class S3Controller(base.BaseController):
                                                     Params={'Bucket': bucket.name,
                                                             'Key': key_path},
                                                     ExpiresIn=60)
-                redirect(url)
+                if request.method == 'GET':
+                    redirect(url)
 
             except ClientError as ex:
                 if ex.response['Error']['Code'] == 'NoSuchKey':
