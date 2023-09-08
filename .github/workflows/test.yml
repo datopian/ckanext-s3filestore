@@ -52,7 +52,8 @@ jobs:
         pip install -r requirements.txt
         pip install -r dev-requirements.txt
         pip install -e .
+        pip install pytest-ckan
         # Replace default path to CKAN core config file with the one on the container
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
     - name: Run tests
-      run: pytest --ckan-ini=test.ini --cov=ckanext.s3filestore --disable-warnings ckanext/s3filestore/tests
+      run: pytest-ckan --ckan-ini=test.ini --cov=ckanext.s3filestore --disable-warnings ckanext/s3filestore/tests
