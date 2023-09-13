@@ -28,7 +28,8 @@ def test_view_shown_for_url_type_upload(app, create_with_upload):
                """
     resource = create_with_upload(
         content, u'test.html',
-        package_id=dataset["id"]
+        package_id=dataset["id"],
+        format=u'html'
     )
 
     resource_view = helpers.call_action(u'resource_view_list', context,
@@ -40,7 +41,8 @@ def test_view_shown_for_url_type_upload(app, create_with_upload):
     resource_view_src_url = url_for(
         u's3_resource.resource_download',
         id=dataset[u'name'],
-        resource_id=resource[u'id']
+        resource_id=resource[u'id'],
+        format=u'html'
     )
 
     url = url_for(
