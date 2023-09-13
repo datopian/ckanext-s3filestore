@@ -19,7 +19,7 @@ class TestS3Controller(object):
     def test_resource_download_url(self, resource_with_upload):
         u'''The resource url is expected for uploaded resource file.'''
 
-        expected_url = u'http://test.ckan.net/dataset/{0}/' \
+        expected_url = u'http://ckan-dev:5000/dataset/{0}/' \
                        u'resource/{1}/download/test.csv'.\
             format(resource_with_upload[u'package_id'],
                    resource_with_upload[u'id'])

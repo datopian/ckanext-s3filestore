@@ -51,9 +51,7 @@ def test_view_shown_for_url_type_upload(app, create_with_upload):
 
     response = app.get(url)
 
-    assert (u'/dataset/{0}/resource/{1}/download?preview=True'
-            .format(dataset[u'id'], resource[u'id'])
-            in response)
+    assert (u'<iframe title="Webpage view"' in response.body)
 
     resource_view_src = app.get(resource_view_src_url,
                                 follow_redirects=False)
