@@ -71,6 +71,8 @@ jobs:
         pwd
         ls -la ../
         ls -la ../../
+        ls -la ../../../
+        ls -la ../../../../
         pip install -r dev-requirements.txt
         ckan -c test.ini db init
     - name: Run all tests
