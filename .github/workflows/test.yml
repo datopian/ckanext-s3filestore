@@ -61,7 +61,7 @@ jobs:
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x ./mc
-        ./mc alias set minio http://127.0.0.1:9000
+        ./mc alias set minio http://127.0.0.1:9000 minioadmin minioadmin
         ./mc mb --ignore-existing minio/ckan
     - name: Setup extension (CKAN >= 2.9)
       if: ${{ matrix.ckan-version != '2.8' }}
