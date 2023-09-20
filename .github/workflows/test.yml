@@ -37,7 +37,7 @@ jobs:
       redis:
           image: redis:3
       minio:
-        image: minio/minio:RELEASE.2020-10-03T02-50-53Z
+        image: minio/minio
         env:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
@@ -59,6 +59,12 @@ jobs:
         # Replace default path to CKAN core config file with the one on the container
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test_subclass.ini
+    - name: Setup test.ini for minio
+      run: |
+        sed -i "s|ckanext.s3filestore.aws_access_key_id = test-access-key|ckanext.s3filestore.aws_access_key_id = minioadmin|g" src/ckanext-s3filestore/test.ini
+        sed -i "s|ckanext.s3filestore.aws_secret_access_key = test-secret-key|ckanext.s3filestore.aws_secret_access_key = minioadmin|g" src/ckanext-s3filestore/test.ini
+        sed -i "s|ckanext.s3filestore.aws_bucket_name = test-bucket|ckanext.s3filestore.aws_bucket_name = ckan|g" src/ckanext-s3filestore/test.ini
+        sed -i "s|ckanext.s3filestore.host_name = http://127.0.0.1:9000|ckanext.s3filestore.host_name = http://minio:9000|g" src/ckanext-s3filestore/test.ini
     - name: Setup extension (CKAN >= 2.9)
       if: ${{ matrix.ckan-version != '2.8' }}
       run: |
