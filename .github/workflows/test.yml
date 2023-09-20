@@ -37,13 +37,14 @@ jobs:
       redis:
           image: redis:3
       minio:
-        image: minio/minio
-        env:
-          MINIO_ACCESS_KEY: minioadmin
-          MINIO_SECRET_KEY: minioadmin
+        # Note: this is an unofficial image
+        image: lazybit/minio
         ports:
           - 9000:9000
-        options: --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1" --health-interval 10s --health-timeout 5s --health-retries 5
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
     env:
       CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres/ckan_test
       CKAN_DATASTORE_WRITE_URL: postgresql://datastore_write:pass@postgres/datastore_test
@@ -65,6 +66,12 @@ jobs:
         sed -i "s|ckanext.s3filestore.aws_secret_access_key = test-secret-key|ckanext.s3filestore.aws_secret_access_key = minioadmin|g" src/ckanext-s3filestore/test.ini
         sed -i "s|ckanext.s3filestore.aws_bucket_name = test-bucket|ckanext.s3filestore.aws_bucket_name = ckan|g" src/ckanext-s3filestore/test.ini
         sed -i "s|ckanext.s3filestore.host_name = http://127.0.0.1:9000|ckanext.s3filestore.host_name = http://minio:9000|g" src/ckanext-s3filestore/test.ini
+    - name: Setup bucket in minio
+      run: |
+        wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x ./mc
+        ./mc alias set minio http://127.0.0.1:9000
+        ./mc mb --ignore-existing minio/ckan
     - name: Setup extension (CKAN >= 2.9)
       if: ${{ matrix.ckan-version != '2.8' }}
       run: |
