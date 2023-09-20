@@ -54,7 +54,7 @@ def test_view_shown_for_url_type_upload(app, create_with_upload):
 
     latest_version = check_ckan_version(min_version=u'2.10')
 
-    if latest_version:
+    if not latest_version:
         assert (u'/dataset/{0}/resource/{1}/download?preview=True'
                .format(dataset[u'id'], resource[u'id'])
                in response)
