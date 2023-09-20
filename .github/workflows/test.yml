@@ -1,0 +1,73 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install requirements
+        run: pip install flake8 pycodestyle
+      - name: Check syntax
+        run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics --exclude ckan
+
+  test:
+    needs: lint
+    strategy:
+      matrix:
+        ckan-version: ["2.10", 2.9]
+      fail-fast: false
+
+    name: CKAN ${{ matrix.ckan-version }}
+    runs-on: ubuntu-latest
+    container:
+      image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
+    services:
+      solr:
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+      postgres:
+        image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+          image: redis:3
+      minio:
+        image: minio/minio:RELEASE.2020-10-03T02-50-53Z
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+        ports:
+          - 9000:9000
+        options: --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1" --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres/ckan_test
+      CKAN_DATASTORE_WRITE_URL: postgresql://datastore_write:pass@postgres/datastore_test
+      CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
+      CKAN_SOLR_URL: http://solr:8983/solr/ckan
+      CKAN_REDIS_URL: redis://redis:6379/1
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install requirements
+      run: |
+        pip install -e .
+        # Replace default path to CKAN core config file with the one on the container
+        sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
+        sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test_subclass.ini
+    - name: Setup extension (CKAN >= 2.9)
+      if: ${{ matrix.ckan-version != '2.8' }}
+      run: |
+        pip install -r test-requirements.txt
+        ckan -c test.ini db init
+    - name: Run all tests
+      run: pytest --ckan-ini=test.ini --cov=ckanext.s3filestore ckanext/s3filestore/tests
+    - name: Report Coveralls (Linux)
+      if: startsWith(runner.os, 'Linux')
+      run: curl -sL https://coveralls.io/coveralls-linux.tar.gz | tar -xz && ./coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
