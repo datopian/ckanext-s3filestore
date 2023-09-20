@@ -73,10 +73,12 @@ jobs:
         ckan -c test.ini db init
     - name: Run all tests
       run: |
-        sed -i "s|ckanext.s3filestore.aws_access_key_id = test-access-key|ckanext.s3filestore.aws_access_key_id = minioadmin|g" test.ini
-        sed -i "s|ckanext.s3filestore.aws_secret_access_key = test-secret-key|ckanext.s3filestore.aws_secret_access_key = minioadmin|g" test.ini
-        sed -i "s|ckanext.s3filestore.aws_bucket_name = test-bucket|ckanext.s3filestore.aws_bucket_name = ckan|g" test.ini
-        sed -i "s|ckanext.s3filestore.host_name = http://127.0.0.1:9000|ckanext.s3filestore.host_name = http://minio:9000|g" test.ini
+        cat test.ini
+        sed -i -e 's|ckanext.s3filestore.aws_access_key_id = test-access-key|ckanext.s3filestore.aws_access_key_id = minioadmin|g' ./test.ini
+        sed -i -e 's|ckanext.s3filestore.aws_secret_access_key = test-secret-key|ckanext.s3filestore.aws_secret_access_key = minioadmin|g' ./test.ini
+        sed -i -e 's|ckanext.s3filestore.aws_bucket_name = test-bucket|ckanext.s3filestore.aws_bucket_name = ckan|g' ./test.ini
+        sed -i -e 's|ckanext.s3filestore.host_name = http://127.0.0.1:9000|ckanext.s3filestore.host_name = http://minio:9000|g' ./test.ini
+        cat test.ini
         sed -i -e 's/ckan-dev/localhost/' ckanext/s3filestore/tests/test_blueprints.py
         pytest --ckan-ini=test.ini --cov=ckanext.s3filestore ckanext/s3filestore/tests
     - name: Report Coveralls (Linux)
