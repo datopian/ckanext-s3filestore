@@ -5,6 +5,7 @@ import pytest
 from ckan.lib.helpers import url_for
 
 from ckan.tests import helpers, factories
+from ckan.plugins.toolkit import check_ckan_version
 
 
 @pytest.mark.usefixtures(u'clean_db', u'clean_index')
@@ -51,7 +52,14 @@ def test_view_shown_for_url_type_upload(app, create_with_upload):
 
     response = app.get(url)
 
-    assert (u'<iframe title="Webpage view"' in response.body)
+    latest_version = check_ckan_version(min_version=u'2.10')
+
+    if latest_version:
+        assert (u'/dataset/{0}/resource/{1}/download?preview=True'
+               .format(dataset[u'id'], resource[u'id'])
+               in response)
+    else:
+        assert (u'<iframe title="Webpage view"' in response.body)
 
     resource_view_src = app.get(resource_view_src_url,
                                 follow_redirects=False)
