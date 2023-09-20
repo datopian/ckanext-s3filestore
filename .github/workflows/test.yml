@@ -59,6 +59,7 @@ jobs:
     - name: Install requirements
       run: |
         pip install -e .
+        sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
     - name: Setup bucket in minio
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
@@ -68,15 +69,11 @@ jobs:
     - name: Setup extension (CKAN >= 2.9)
       if: ${{ matrix.ckan-version != '2.8' }}
       run: |
-        pwd
-        ls -la ../
-        ls -la ../../
-        ls -la ../../../
-        ls -la ../../../../
         pip install -r dev-requirements.txt
         ckan -c test.ini db init
     - name: Run all tests
       run: |
+        sed -i -e 's/ckan-dev/localhost/' ckanext/s3filestore/tests/test_blueprints.py
         pytest --ckan-ini=test.ini --cov=ckanext.s3filestore ckanext/s3filestore/tests
     - name: Report Coveralls (Linux)
       if: startsWith(runner.os, 'Linux')
