@@ -2,18 +2,15 @@
    these badges work. The necessary Travis and Coverage config files have been
    generated for you.
 
-.. image:: https://github.com/keitaroinc/ckanext-s3filestore/workflows/CI/badge.svg
-    :target: https://github.com/keitaroinc/ckanext-s3filestore/actions
+.. image:: https://github.com/datopian/ckanext-s3filestore/workflows/Tests/badge.svg?branch=ckan-2.10
+    :target: https://github.com/datopian/ckanext-s3filestore/actions
 
 
-.. image:: https://coveralls.io/repos/github/keitaroinc/ckanext-s3filestore/badge.svg?branch=main
-     :target: https://coveralls.io/github/keitaroinc/ckanext-s3filestore?branch=main
+.. image:: https://coveralls.io/repos/github/datopian/ckanext-s3filestore/badge.svg?branch=ckan-2.10
+    :target: https://coveralls.io/github/datopian/ckanext-s3filestore?branch=ckan-2.10
 
 .. image:: https://img.shields.io/badge/python-3.8-blue.svg
     :target: https://www.python.org/downloads/release/python-384/
-
-.. image:: https://img.shields.io/pypi/v/ckanext-s3filestore
-    :target: https://pypi.org/project/ckanext-s3filestore
 
 
 
