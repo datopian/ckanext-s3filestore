@@ -43,9 +43,11 @@ class TestS3ResourceUpload(object):
         assert s3_client.head_object(Bucket=self.bucket_name, Key=key)
 
         context = {u'user': factories.Sysadmin()[u'name']}
+        package = factories.Dataset()
         helpers.call_action(u'resource_update', context,
                             clear_upload=True,
-                            id=resource_with_upload[u'id'])
+                            id=resource_with_upload[u'id'],
+                            package_id=package[u'id'])
 
         # key shouldn't exist, this raises ClientError
         with pytest.raises(ClientError) as e:

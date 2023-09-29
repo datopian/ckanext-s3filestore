@@ -122,12 +122,15 @@ class BaseS3Uploader(object):
 
         return bucket
 
-    def upload_to_key(self, filepath, upload_file, make_public=False):
+    def upload_to_key(self, filepath, upload_file, make_public=False, owner_org=None):
         '''Uploads the `upload_file` to `filepath` on `self.bucket`.'''
 
         upload_file.seek(0)
 
         s3 = self.get_s3_resource()
+
+        if owner_org:
+            filepath = os.path.join(owner_org, filepath)
 
         try:
             s3.Object(self.bucket_name, filepath).put(
@@ -302,6 +305,13 @@ class S3ResourceUploader(BaseS3Uploader):
 
         mime = magic.Magic(mime=True)
 
+        owner_package = toolkit.get_action('package_show')(
+            {},
+            {'id': resource['package_id']}
+        )
+
+        self.owner_org = owner_package.get('owner_org')
+
         if bool(upload_field_storage) and \
                 isinstance(upload_field_storage, ALLOWED_UPLOAD_TYPES):
             self.filesize = 0  # bytes
@@ -373,7 +383,11 @@ class S3ResourceUploader(BaseS3Uploader):
         # file to the appropriate key in the AWS bucket.
         if self.filename:
             filepath = self.get_path(id, self.filename)
-            self.upload_to_key(filepath, self.upload_file)
+
+            if self.owner_org:
+                self.upload_to_key(filepath, self.upload_file, owner_org=self.owner_org)
+            else:
+                self.upload_to_key(filepath, self.upload_file)
 
         # The resource form only sets self.clear (via the input clear_upload)
         # to True when an uploaded file is not replaced by another uploaded
@@ -382,7 +396,11 @@ class S3ResourceUploader(BaseS3Uploader):
         # clean up the file system.
         if self.clear and self.old_filename:
             filepath = self.get_path(id, self.old_filename)
-            self.clear_key(filepath)
+
+            if self.owner_org:
+                self.clear_key(os.path.join(self.owner_org, filepath))
+            else:
+                self.clear_key(filepath)
 
     def delete(self, id, filename=None):
         ''' Delete file we are pointing at'''

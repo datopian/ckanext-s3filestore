@@ -42,10 +42,12 @@ def resource_download(package_type, id, resource_id, filename=None):
     '''
     context = {'model': model, 'session': model.Session,
                'user': c.user or c.author, 'auth_user_obj': c.userobj}
+    owner_org = None
 
     try:
         rsc = get_action('resource_show')(context, {'id': resource_id})
-        get_action('package_show')(context, {'id': id})
+        package = get_action('package_show')(context, {'id': id})
+        owner_org = package.get('owner_org')
     except NotFound:
         return abort(404, _('Resource not found'))
     except NotAuthorized:
@@ -60,6 +62,9 @@ def resource_download(package_type, id, resource_id, filename=None):
             filename = os.path.basename(rsc['url'])
         key_path = upload.get_path(rsc['id'], filename)
         key = filename
+
+        if owner_org:
+            key_path = os.path.join(owner_org, key_path)
 
         if key is None:
             log.warn('Key \'{0}\' not found in bucket \'{1}\''
