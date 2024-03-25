@@ -259,6 +259,11 @@ class S3ResourceUploader(BaseS3Uploader):
                     pass
             if not self.mimetype: self.mimetype = ''
             self.upload_file = _get_underlying_file(upload_field_storage)
+            self.upload_file.seek(0, os.SEEK_END)
+            self.filesize = self.upload_file.tell()
+            # go back to the beginning of the file buffer
+            self.upload_file.seek(0, os.SEEK_SET)      
+
         elif self.clear and resource.get('id'):
             # New, not yet created resources can be marked for deletion if the
             # users cancels an upload and enters a URL instead.
