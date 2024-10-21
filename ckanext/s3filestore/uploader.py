@@ -323,7 +323,7 @@ class S3ResourceUploader(BaseS3Uploader):
             {'id': resource['package_id']}
         )
 
-        log.error(f'Resource id: {resource['id']}')
+        log.error(f'Resource id: {resource["id"]}')
 
         self.owner_org = owner_package.get('owner_org')
 
