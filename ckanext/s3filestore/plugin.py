@@ -5,7 +5,9 @@ import ckantoolkit as toolkit
 import ckanext.s3filestore.uploader
 from ckanext.s3filestore.views import resource, uploads
 from ckanext.s3filestore.click_commands import upload_resources, upload_assets
+import logging
 
+log = logging.getLogger(__name__)
 
 class S3FileStorePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
@@ -54,6 +56,8 @@ class S3FileStorePlugin(plugins.SingletonPlugin):
 
     def get_resource_uploader(self, data_dict):
         '''Return an uploader object used to upload resource files.'''
+        log.error("Uploading the following resource")
+        log.error(data_dict)
         return ckanext.s3filestore.uploader.S3ResourceUploader(data_dict)
 
     def get_uploader(self, upload_to, old_filename=None):

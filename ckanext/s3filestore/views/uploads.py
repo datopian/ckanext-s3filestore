@@ -25,18 +25,25 @@ s3_uploads = Blueprint(
 
 def uploaded_file_redirect(upload_to, filename):
     '''Redirect static file requests to their location on S3.'''
+    log.error('upload_file_redirect - start')
 
     storage_path = S3Uploader.get_storage_path(upload_to)
     filepath = os.path.join(storage_path, filename)
     base_uploader = BaseS3Uploader()
+    log.error(f'upload_file_redirect - filepath: {filepath}')
+    log.error(f'upload_file_redirect - storage_path: {storage_path}')
+    log.error(f'upload_file_redirect - upload_to: {upload_to}')
 
     try:
         url = base_uploader.get_signed_url_to_key(filepath)
+        log.error(f'upload_file_redirect - signed url: {url}')
     except ClientError as ex:
         if ex.response['Error']['Code'] in ['NoSuchKey', '404']:
             return abort(404, _('Keys not found on S3'))
         else:
             raise ex
+
+    log.error('upload_file_redirect - end redirecting')
 
     return redirect(url)
 

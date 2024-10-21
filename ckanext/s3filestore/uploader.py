@@ -124,14 +124,19 @@ class BaseS3Uploader(object):
 
     def upload_to_key(self, filepath, upload_file, make_public=False, owner_org=None):
         '''Uploads the `upload_file` to `filepath` on `self.bucket`.'''
+        log.error('upload_to_key - start')
 
         upload_file.seek(0)
 
         s3 = self.get_s3_resource()
+        log.error(f'upload_to_key - filepath: {filepath}')
 
         if owner_org:
+            log.error(f'upload_to_key - owner_org exists: {owner_org}')
             filepath = os.path.join(owner_org, filepath)
+            log.error(f'upload_to_key - updated filepath: {filepath}')
 
+        log.error(f'upload_to_key - trying to upload {filepath} to S3')
         try:
             s3.Object(self.bucket_name, filepath).put(
                 Body=upload_file.read(),
@@ -141,6 +146,7 @@ class BaseS3Uploader(object):
         except Exception as e:
             log.error('Something went very very wrong for {0}'.format(str(e)))
             raise e
+        log.error('upload_to_key - end')
 
     def clear_key(self, filepath):
         '''Deletes the contents of the key at `filepath` on `self.bucket`.'''
@@ -163,6 +169,7 @@ class BaseS3Uploader(object):
         be configured to set the Host header back to the true value when
         forwarding the request (CloudFront does this automatically).
         '''
+        log.error('get_signed_url_to_key - start')
         client = self.get_s3_client()
         # check whether the object exists in S3
         client.head_object(Bucket=self.bucket_name, Key=key)
@@ -176,9 +183,15 @@ class BaseS3Uploader(object):
         url = client.generate_presigned_url(ClientMethod='get_object',
                                             Params=params,
                                             ExpiresIn=self.signed_url_expiry)
-        if self.download_proxy:
-            url = URL_HOST.sub(self.download_proxy + '/', url, 1)
+        log.error(f'get_signed_url_to_key - signed url: {url}')
 
+        log.error('get_signed_url_to_key - checking if download_proxy exists')
+        if self.download_proxy:
+            log.error('get_signed_url_to_key - download_proxy exists')
+            url = URL_HOST.sub(self.download_proxy + '/', url, 1)
+            log.error(f'get_signed_url_to_key - updated signed url: {url}')
+
+        log.error('get_signed_url_to_key - end')
         return url
 
 
@@ -310,6 +323,8 @@ class S3ResourceUploader(BaseS3Uploader):
             {'id': resource['package_id']}
         )
 
+        log.error(f'Resource id: {resource['id']}')
+
         self.owner_org = owner_package.get('owner_org')
 
         if bool(upload_field_storage) and \
@@ -378,15 +393,20 @@ class S3ResourceUploader(BaseS3Uploader):
 
     def upload(self, id, max_size=10):
         '''Upload the file to S3.'''
+        log.error('upload - start')
 
         # If a filename has been provided (a file is being uploaded) write the
         # file to the appropriate key in the AWS bucket.
         if self.filename:
+            log.error('upload - filename exists')
             filepath = self.get_path(id, self.filename)
+            log.error(f'upload - filepath: {filepath}')
 
             if self.owner_org:
+                log.error(f'upload - owner_org exists: {self.owner_org}')
                 self.upload_to_key(filepath, self.upload_file, owner_org=self.owner_org)
             else:
+                log.error('upload - owner_org does not exist')
                 self.upload_to_key(filepath, self.upload_file)
 
         # The resource form only sets self.clear (via the input clear_upload)
@@ -395,11 +415,15 @@ class S3ResourceUploader(BaseS3Uploader):
         # replaced by a link, we should remove the previously uploaded file to
         # clean up the file system.
         if self.clear and self.old_filename:
+            log.error('upload - clear and old_filename exists')
             filepath = self.get_path(id, self.old_filename)
+            log.error(f'upload - old_filepath: {filepath}')
 
             if self.owner_org:
+                log.error(f'upload - owner_org exists: {self.owner_org}')
                 self.clear_key(os.path.join(self.owner_org, filepath))
             else:
+                log.error('upload - owner_org does not exist')
                 self.clear_key(filepath)
 
     def delete(self, id, filename=None):
