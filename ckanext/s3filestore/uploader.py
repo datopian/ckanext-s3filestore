@@ -152,6 +152,20 @@ class BaseS3Uploader(object):
         except Exception as e:
             raise e
 
+    def generate_put_presigned_url(self, key, extra_params={}):
+        '''
+        Generates a pre-signed URL for HTTP PUT to upload an S3 object.
+        '''
+        client = self.get_s3_client()
+        params = {'Bucket': self.bucket_name,
+                    'Key': key
+                    }
+        params.update(extra_params)
+        url = client.generate_presigned_url(ClientMethod='put_object',
+                                            Params=params,
+                                            ExpiresIn=self.signed_url_expiry)
+        return url
+
     def get_signed_url_to_key(self, key, extra_params={}):
         '''Generates a pre-signed URL giving access to an S3 object.
 

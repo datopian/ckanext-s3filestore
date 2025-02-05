@@ -3,8 +3,10 @@ import ckan.plugins as plugins
 import ckantoolkit as toolkit
 
 import ckanext.s3filestore.uploader
+from ckanext.s3filestore.actions import get_signed_url
 from ckanext.s3filestore.views import resource, uploads
 from ckanext.s3filestore.click_commands import upload_resources, upload_assets
+from ckan.types import Action, AuthFunction, Context, DataDict, AuthResult
 
 
 class S3FileStorePlugin(plugins.SingletonPlugin):
@@ -13,6 +15,8 @@ class S3FileStorePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IUploader)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IClick)
+    plugins.implements(plugins.IActions)
+    plugins.implements(plugins.IAuthFunctions)
 
     # IConfigurer
 
@@ -72,3 +76,19 @@ class S3FileStorePlugin(plugins.SingletonPlugin):
 
     def get_commands(self):
         return [upload_resources, upload_assets]
+
+    # IAuth
+
+    def get_auth_functions(self) -> dict[str, AuthFunction]:
+        def get_signed_url(context: Context, data_dict: DataDict) -> AuthResult:
+            return toolkit.check_access("package_create", context, data_dict)
+        return {
+            "get_signed_url": get_signed_url 
+        }
+
+    # IActions
+
+    def get_actions(self):
+        return {
+            'get_signed_url': get_signed_url
+        }
