@@ -1,6 +1,5 @@
 import os
 import re
-import cgi
 import logging
 import datetime
 import mimetypes
@@ -15,12 +14,11 @@ import ckantoolkit as toolkit
 import ckan.model as model
 import ckan.lib.munge as munge
 
-if toolkit.check_ckan_version(min_version='2.7.0'):
-    from werkzeug.datastructures import FileStorage as FlaskFileStorage
+from werkzeug.datastructures import FileStorage as FlaskFileStorage
 
-    ALLOWED_UPLOAD_TYPES = (cgi.FieldStorage, FlaskFileStorage)
-else:
-    ALLOWED_UPLOAD_TYPES = cgi.FieldStorage
+# Uploads reach CKAN as werkzeug FileStorage only: cgi.FieldStorage was the
+# Pylons-era type, and the cgi module is gone from Python 3.13.
+ALLOWED_UPLOAD_TYPES = (FlaskFileStorage,)
 
 config = toolkit.config
 log = logging.getLogger(__name__)
@@ -33,9 +31,7 @@ URL_HOST = re.compile('^https?://[^/]*/')
 
 
 def _get_underlying_file(wrapper):
-    if isinstance(wrapper, FlaskFileStorage):
-        return wrapper.stream
-    return wrapper.file
+    return wrapper.stream
 
 
 class S3FileStoreException(Exception):
